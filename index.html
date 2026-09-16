@@ -1,26 +1,41 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
 <title>ALPHA GRAVITY — 2D Physics Puzzle Platformer</title>
+<meta name="description" content="Alpha Gravity — a 30-level neon 2D physics puzzle platformer. Flip gravity, push crates, ride movers. Play on web or install the Android APK.">
+<meta name="theme-color" content="#04060d">
+<meta name="color-scheme" content="dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Alpha Gravity">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--ts:1;--cy:#00e5ff;--vi:#7c4dff;--dg:#ff3b6b;--gd:#ffd166;--bg:#04060d;}
 *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;overflow:hidden;background:var(--bg);color:#dff6ff;font-family:'Rajdhani','Segoe UI',sans-serif;}
-canvas#cv{position:fixed;inset:0;display:block;}
+html{height:100%;-webkit-text-size-adjust:100%;}
+body{height:100%;min-height:100dvh;overflow:hidden;overscroll-behavior:none;background:var(--bg);color:#dff6ff;font-family:'Rajdhani','Segoe UI',system-ui,sans-serif;-webkit-touch-callout:none;}
+canvas#cv{position:fixed;top:0;left:0;display:block;touch-action:none;}
 .hidden{display:none!important;}
-.screen{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(1200px 700px at 50% 30%,rgba(20,30,60,.82),rgba(3,5,12,.94));backdrop-filter:blur(6px);overflow-y:auto;padding:18px;text-align:center;}
+.screen{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(1200px 700px at 50% 30%,rgba(20,30,60,.82),rgba(3,5,12,.94));backdrop-filter:blur(6px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:calc(18px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right)) calc(18px + env(safe-area-inset-bottom)) calc(18px + env(safe-area-inset-left));text-align:center;}
 h1.title{font-family:'Orbitron',sans-serif;font-weight:900;letter-spacing:.35em;font-size:clamp(26px,6vw,54px);background:linear-gradient(90deg,var(--cy),var(--vi),var(--dg));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(0,229,255,.35));margin:10px 0 2px;}
 .sub{letter-spacing:.5em;font-size:clamp(10px,2vw,14px);color:#7fd8e8;opacity:.85;margin-bottom:14px;text-transform:uppercase;}
-.logoSvg{width:clamp(90px,18vw,150px);height:auto;filter:drop-shadow(0 0 16px rgba(0,229,255,.45));}
+.logoSvg{width:clamp(84px,18vw,150px);max-height:20vh;height:auto;filter:drop-shadow(0 0 16px rgba(0,229,255,.45));}
 .orbit{transform-origin:60px 60px;animation:spin 7s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
-.btn{font-family:'Orbitron',sans-serif;letter-spacing:.22em;font-size:clamp(12px,2.4vw,16px);color:#eaffff;background:linear-gradient(180deg,rgba(0,229,255,.14),rgba(124,77,255,.10));border:1px solid rgba(0,229,255,.55);border-radius:10px;padding:12px 26px;margin:6px;cursor:pointer;transition:.18s;min-width:min(240px,70vw);text-transform:uppercase;box-shadow:0 0 0 rgba(0,229,255,0);}
-.btn:hover,.btn:active{background:rgba(0,229,255,.22);box-shadow:0 0 22px rgba(0,229,255,.35);transform:translateY(-1px);}
-.btn.small{min-width:0;padding:8px 14px;font-size:11px;margin:4px;}
+.btn{font-family:'Orbitron',sans-serif;letter-spacing:.22em;font-size:clamp(12px,2.4vw,16px);color:#eaffff;background:linear-gradient(180deg,rgba(0,229,255,.14),rgba(124,77,255,.10));border:1px solid rgba(0,229,255,.55);border-radius:10px;padding:12px 24px;margin:6px;cursor:pointer;transition:.18s;min-width:min(260px,80vw);min-height:48px;display:inline-flex;align-items:center;justify-content:center;touch-action:manipulation;text-transform:uppercase;box-shadow:0 0 0 rgba(0,229,255,0);}
+.btn:active{background:rgba(0,229,255,.22);box-shadow:0 0 22px rgba(0,229,255,.35);transform:translateY(-1px);}
+.btn.small{min-width:0;min-height:38px;padding:8px 14px;font-size:11px;margin:4px;}
 .btn.danger{border-color:rgba(255,59,107,.6);background:rgba(255,59,107,.10);}
-.panel{background:rgba(6,10,22,.85);border:1px solid rgba(0,229,255,.25);border-radius:16px;padding:18px 20px;max-width:560px;width:min(560px,92vw);box-shadow:0 10px 40px rgba(0,0,0,.5);}
+.panel{background:rgba(6,10,22,.85);border:1px solid rgba(0,229,255,.25);border-radius:16px;padding:18px 20px;max-width:560px;width:min(560px,94vw);max-height:min(88dvh,760px);overflow-y:auto;overscroll-behavior:contain;box-shadow:0 10px 40px rgba(0,0,0,.5);}
 .panel h2{font-family:'Orbitron',sans-serif;letter-spacing:.3em;color:var(--cy);font-size:clamp(15px,3vw,22px);margin-bottom:10px;}
 .panel p,.panel li{font-size:clamp(13px,2.6vw,16px);line-height:1.55;color:#bfe6f2;text-align:left;}
 .panel ul{list-style:none;}
@@ -33,21 +48,22 @@ h1.title{font-family:'Orbitron',sans-serif;font-weight:900;letter-spacing:.35em;
 .sw.on{background:rgba(0,229,255,.25);}
 .sw.on::after{left:31px;background:var(--cy);box-shadow:0 0 10px var(--cy);}
 .seg{display:flex;gap:6px;}
-.seg button{font-family:'Orbitron';font-size:11px;letter-spacing:.1em;padding:6px 12px;border-radius:8px;border:1px solid rgba(0,229,255,.4);background:transparent;color:#9fdcea;cursor:pointer;}
+.seg button{font-family:'Orbitron';font-size:11px;letter-spacing:.1em;padding:8px 12px;min-height:38px;border-radius:8px;border:1px solid rgba(0,229,255,.4);background:transparent;color:#9fdcea;cursor:pointer;touch-action:manipulation;}
 .seg button.on{background:rgba(0,229,255,.25);color:#fff;box-shadow:0 0 10px rgba(0,229,255,.4);}
-#lvGrid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:14px;width:min(560px,92vw);}
-@media(max-width:520px){#lvGrid{grid-template-columns:repeat(5,1fr);}}
+#lvGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(44px,11vw,68px),1fr));gap:clamp(6px,1.6vw,10px);margin-top:14px;width:min(620px,94vw);justify-content:center;}
 .lv{position:relative;aspect-ratio:1;border-radius:12px;border:1px solid rgba(0,229,255,.4);background:rgba(10,16,32,.8);color:#eaffff;font-family:'Orbitron';font-size:clamp(13px,3vw,18px);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s;}
 .lv:hover{background:rgba(0,229,255,.18);}
 .lv.lock{opacity:.35;cursor:not-allowed;border-color:rgba(140,160,180,.3);}
 .lv .st{position:absolute;bottom:4px;left:0;right:0;font-size:9px;letter-spacing:2px;color:var(--gd);}
-#hud{position:fixed;top:0;left:0;right:0;z-index:15;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;pointer-events:none;font-family:'Orbitron';}
-#hud .chip{background:rgba(5,9,20,.55);border:1px solid rgba(0,229,255,.3);border-radius:10px;padding:6px 12px;font-size:clamp(10px,2.2vw,13px);letter-spacing:.14em;color:#bff0fb;backdrop-filter:blur(4px);}
+#hud{position:fixed;top:0;left:0;right:0;z-index:15;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:calc(8px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) 8px calc(12px + env(safe-area-inset-left));pointer-events:none;font-family:'Orbitron';}
+#hud .chips{display:flex;gap:6px;flex-wrap:wrap;max-width:76vw;}
+#hud .chip{background:rgba(5,9,20,.55);border:1px solid rgba(0,229,255,.3);border-radius:10px;padding:5px 10px;font-size:clamp(9px,2vw,13px);letter-spacing:.12em;color:#bff0fb;white-space:nowrap;backdrop-filter:blur(4px);}
 #hud .chip b{color:var(--gd);}
-#pauseBtn{pointer-events:auto;cursor:pointer;border:1px solid rgba(0,229,255,.5);background:rgba(5,9,20,.6);color:var(--cy);border-radius:10px;padding:6px 14px;font-family:'Orbitron';font-size:14px;}
-#touch{position:fixed;inset:auto 0 0 0;z-index:16;display:flex;justify-content:space-between;padding:0 16px calc(16px + env(safe-area-inset-bottom));pointer-events:none;}
-.tcl{display:flex;gap:14px;pointer-events:auto;}
-.tbtn{width:calc(64px*var(--ts));height:calc(64px*var(--ts));border-radius:50%;border:1px solid rgba(0,229,255,.55);background:rgba(8,14,28,.55);color:var(--cy);font-size:calc(24px*var(--ts));display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);touch-action:none;}
+#hudBtns{display:flex;gap:6px;flex:0 0 auto;pointer-events:auto;}
+#pauseBtn,#fsBtn{pointer-events:auto;cursor:pointer;border:1px solid rgba(0,229,255,.5);background:rgba(5,9,20,.6);color:var(--cy);border-radius:10px;padding:6px 12px;font-family:'Orbitron';font-size:14px;min-width:44px;min-height:40px;touch-action:manipulation;}
+#touch{position:fixed;inset:auto 0 0 0;z-index:16;display:flex;justify-content:space-between;align-items:flex-end;padding:0 calc(14px + env(safe-area-inset-left)) calc(14px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-right));pointer-events:none;}
+.tcl{display:flex;gap:clamp(10px,3vw,16px);pointer-events:auto;}
+.tbtn{width:calc(68px*var(--ts));height:calc(68px*var(--ts));border-radius:50%;border:1px solid rgba(0,229,255,.55);background:rgba(8,14,28,.55);color:var(--cy);font-size:calc(24px*var(--ts));display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);touch-action:none;}
 .tbtn:active{background:rgba(0,229,255,.3);}
 .tbtn.jump{border-color:rgba(255,209,102,.6);color:var(--gd);}
 #bar{width:min(320px,70vw);height:6px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden;margin:18px 0 8px;}
@@ -57,24 +73,53 @@ h1.title{font-family:'Orbitron',sans-serif;font-weight:900;letter-spacing:.35em;
 .starsBig span{color:var(--gd);text-shadow:0 0 18px rgba(255,209,102,.6);animation:pop .5s backwards;}
 .starsBig span:nth-child(2){animation-delay:.2s}.starsBig span:nth-child(3){animation-delay:.4s}
 @keyframes pop{0%{transform:scale(0);}70%{transform:scale(1.3);}100%{transform:scale(1);}}
-#toast{position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:40;background:rgba(8,14,28,.9);border:1px solid rgba(0,229,255,.5);color:#dff6ff;border-radius:10px;padding:8px 18px;font-family:'Orbitron';font-size:12px;letter-spacing:.2em;opacity:0;transition:.3s;pointer-events:none;}
+#toast{position:fixed;top:calc(58px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:40;background:rgba(8,14,28,.9);border:1px solid rgba(0,229,255,.5);color:#dff6ff;border-radius:10px;padding:8px 18px;font-family:'Orbitron';font-size:12px;letter-spacing:.2em;opacity:0;transition:.3s;pointer-events:none;max-width:92vw;}
 #toast.show{opacity:1;}
 .fadeIn{animation:fu .4s ease both;}
 @keyframes fu{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
 .hint{font-size:11px;letter-spacing:.25em;color:#6fa8ba;margin-top:12px;font-family:'Orbitron';}
+/* ---------- responsive app layout ---------- */
+#menuBtns{display:flex;flex-direction:column;align-items:center;width:100%;max-width:min(680px,94vw);}
+@supports not (height:100dvh){body{min-height:100vh;}}
+@media(hover:hover){.btn:hover{background:rgba(0,229,255,.22);box-shadow:0 0 22px rgba(0,229,255,.35);transform:translateY(-1px);}.lv:hover{background:rgba(0,229,255,.18);}}
+@media(max-width:460px){
+  #hud .chip{padding:4px 8px;font-size:9px;letter-spacing:.06em;}
+  #hudLv{max-width:44vw;overflow:hidden;text-overflow:ellipsis;}
+  .starsBig{letter-spacing:.1em;}
+}
+@media(max-width:420px){.hideS{display:none;}}
+/* short landscape (phones held sideways): compact chrome, 2-up menus */
+@media(orientation:landscape) and (max-height:560px){
+  .logoSvg{width:clamp(52px,11vh,84px);max-height:14vh;}
+  h1.title{font-size:clamp(20px,4vh,34px);letter-spacing:.24em;margin:2px 0 0;}
+  .sub{margin-bottom:6px;letter-spacing:.3em;}
+  #menuBtns{flex-direction:row;flex-wrap:wrap;justify-content:center;max-width:min(760px,96vw);}
+  #menuBtns .btn{flex:1 1 clamp(140px,22vw,210px);min-width:0;margin:3px;padding:10px 14px;}
+  .hint{margin-top:6px;}
+  .panel{max-height:92dvh;padding:12px 16px;}
+  .panel li{margin:3px 0;}
+  .starsBig{margin:2px 0;}
+  .tbtn{width:calc(56px*var(--ts));height:calc(56px*var(--ts));font-size:calc(22px*var(--ts));}
+  #scrLevels .title{margin-bottom:2px;}
+  #lvGrid{margin-top:8px;}
+}
+@media(max-height:420px) and (orientation:landscape){.logoSvg{display:none;}.tbtn{width:calc(50px*var(--ts));height:calc(50px*var(--ts));}}
 </style>
 </head>
 <body>
 <canvas id="cv"></canvas>
 
 <div id="hud" class="hidden">
-  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+  <div class="chips">
     <div class="chip" id="hudLv">LV 01</div>
     <div class="chip">◈ <b id="hudOrb">0/0</b></div>
-    <div class="chip">☠ <b id="hudDeath">0</b></div>
+    <div class="chip hideS">☠ <b id="hudDeath">0</b></div>
     <div class="chip" id="hudTime">0:00</div>
   </div>
-  <button id="pauseBtn">❚❚</button>
+  <div id="hudBtns">
+    <button id="fsBtn" aria-label="Toggle fullscreen" title="Fullscreen">⛶</button>
+    <button id="pauseBtn" aria-label="Pause" title="Pause">❚❚</button>
+  </div>
 </div>
 
 <div id="touch" class="hidden">
@@ -93,11 +138,13 @@ h1.title{font-family:'Orbitron',sans-serif;font-weight:900;letter-spacing:.35em;
   <svg class="logoSvg" viewBox="0 0 120 120"><path d="M60 16 L94 98 H77 L60 55 L43 98 H26 Z" fill="url(#lg1)"/><g class="orbit"><ellipse cx="60" cy="60" rx="47" ry="15" fill="none" stroke="#00e5ff" stroke-width="3" opacity=".85"/><circle cx="107" cy="60" r="5" fill="#ff3b6b"/></g></svg>
   <h1 class="title">ALPHA GRAVITY</h1>
   <div class="sub">Physics Puzzle Platformer</div>
-  <button class="btn" id="mPlay">▶ Play</button>
-  <button class="btn" id="mLevels">◫ Levels</button>
-  <button class="btn" id="mHow">? How to Play</button>
-  <button class="btn" id="mSet">⚙ Settings</button>
-  <button class="btn" id="mAbout">ⓘ About</button>
+  <div id="menuBtns">
+    <button class="btn" id="mPlay">▶ Play</button>
+    <button class="btn" id="mLevels">◫ Levels</button>
+    <button class="btn" id="mHow">? How to Play</button>
+    <button class="btn" id="mSet">⚙ Settings</button>
+    <button class="btn" id="mAbout">ⓘ About</button>
+  </div>
   <div class="hint" id="menuStars">TOTAL STARS ★ 0 / 90</div>
 </div>
 
@@ -288,8 +335,54 @@ function parseLevel(idx){
 }
 /* ---------- GAME ---------- */
 var cv=document.getElementById('cv'),ctx=cv.getContext('2d'),DPR=1,VW=0,VH=0;
-function resize(){DPR=Math.min(2,window.devicePixelRatio||1);VW=window.innerWidth;VH=window.innerHeight;cv.width=VW*DPR;cv.height=VH*DPR;cv.style.width=VW+'px';cv.style.height=VH+'px';ctx.setTransform(DPR,0,0,DPR,0,0);}
-window.addEventListener('resize',resize);resize();
+var NATIVE=/; wv\)/.test(navigator.userAgent)||!!window.ALPHA_NATIVE; /* Android WebView wrapper */
+function camClamp(){/* keep the sector in frame, centred when the viewport is larger than the level */
+ if(!G||!G.lv)return;var ox=G.lv.W*TS-VW,oy=G.lv.H*TS-VH;
+ G.cam.x=ox>=0?clamp(G.cam.x,0,ox):ox/2;G.cam.y=oy>=0?clamp(G.cam.y,0,oy):oy/2;}
+function resize(){var d=document.documentElement;VW=Math.max(240,Math.round(d.clientWidth||window.innerWidth));VH=Math.max(240,Math.round(d.clientHeight||window.innerHeight));
+ DPR=Math.min(2,window.devicePixelRatio||1);cv.width=Math.round(VW*DPR);cv.height=Math.round(VH*DPR);cv.style.width=VW+'px';cv.style.height=VH+'px';ctx.setTransform(DPR,0,0,DPR,0,0);camClamp();}
+window.addEventListener('resize',resize);
+window.addEventListener('orientationchange',function(){setTimeout(resize,150);setTimeout(resize,600);});
+if(window.visualViewport)window.visualViewport.addEventListener('resize',function(){clearTimeout(resize.vo);resize.vo=setTimeout(resize,80);});
+document.addEventListener('fullscreenchange',function(){setTimeout(resize,120);});
+resize();
+/* ---------- APP SHELL: sector backdrop, native bridge, fullscreen, input hardening ---------- */
+/* backdrop layer — drawn behind the world so space outside a sector reads as intentional
+   on tall phones and ultra-wide desktops (renderWorld itself is wrapped, not duplicated) */
+var __renderWorld=renderWorld;
+function drawSectorBackdrop(){var lv=G.lv;if(!lv)return;
+ var bx0=Math.floor(G.cam.x/TS)*TS-TS,by0=Math.floor(G.cam.y/TS)*TS-TS,bx1=G.cam.x+VW+TS,by1=G.cam.y+VH+TS,x,y;
+ ctx.save();ctx.translate(-Math.round(G.cam.x),-Math.round(G.cam.y));
+ ctx.lineWidth=1;ctx.strokeStyle='rgba(0,229,255,.055)';ctx.beginPath();
+ for(x=bx0;x<=bx1;x+=TS){ctx.moveTo(x,by0);ctx.lineTo(x,by1);}
+ for(y=by0;y<=by1;y+=TS){ctx.moveTo(bx0,y);ctx.lineTo(bx1,y);}
+ ctx.stroke();
+ ctx.strokeStyle='rgba(0,229,255,.16)';ctx.lineWidth=2;ctx.strokeRect(0.5,0.5,lv.W*TS-1,lv.H*TS-1);
+ ctx.restore();}
+renderWorld=function(){drawSectorBackdrop();__renderWorld();};
+/* Android hardware back button: pause > resume > levels > menu, otherwise let the OS close/background us */
+window.ALPHA_ANDROID_BACK=function(){var s=G.state;
+ if(s==='play'){setState('pause');return true;}
+ if(s==='pause'){setState('play');return true;}
+ if(s==='complete'){setState('levels');return true;}
+ if(s==='levels'||s==='how'||s==='set'||s==='about'){setState('menu');return true;}
+ return false;};
+/* fullscreen toggle (hidden inside the native wrapper, which already runs fullscreen) */
+var fsBtn=document.getElementById('fsBtn');
+if(fsBtn&&!NATIVE&&(document.fullscreenEnabled||document.webkitFullscreenEnabled)){
+ fsBtn.addEventListener('click',function(){var d=document,el=d.documentElement;
+  try{if(d.fullscreenElement||d.webkitFullscreenElement){(d.exitFullscreen||d.webkitExitFullscreen).call(d);}
+  else{(el.requestFullscreen||el.webkitRequestFullscreen).call(el);}}catch(e){}
+  setTimeout(resize,150);});
+}else if(fsBtn){fsBtn.classList.add('hidden');}
+/* never start audio late, and never leave a key or touch stuck down */
+document.addEventListener('pointerdown',function(){AU.init();AU.resume();});
+window.addEventListener('blur',function(){IN.l=false;IN.r=false;IN.j=false;});
+document.addEventListener('visibilitychange',function(){if(document.hidden){IN.l=false;IN.r=false;IN.j=false;}});
+/* keep browser gestures (pinch-zoom, double-tap zoom, rubber-banding) off the play area */
+document.addEventListener('gesturestart',function(e){e.preventDefault();});
+document.addEventListener('dblclick',function(e){e.preventDefault();});
+document.addEventListener('touchmove',function(e){if(e.touches.length>1)e.preventDefault();},{passive:false});
 var G={state:'boot',lv:null,li:0,player:null,cam:{x:0,y:0},parts:[],stars:[],deaths:0,orbsGot:0,time:0,respawn:null,shake:0,tGlobal:0};
 for(var s=0;s<140;s++)G.stars.push({x:Math.random()*1600,y:Math.random()*900,z:0.2+Math.random()*0.6,r:Math.random()*1.6+0.4});
 var IN={l:false,r:false,j:false,jbuf:0};
@@ -306,7 +399,7 @@ function moveY(lv,e,dy,dyn,oneway){e.y+=dy;var tx0=Math.floor(e.x/TS),tx1=Math.f
  var d=collideRect(lv,e,dyn);if(d){if(dy>0){e.y=d.y-e.h;e.stand=d;}else e.y=d.y+d.h;e.vy=0;return 1;}return 0;}
 /* ---------- LOAD LEVEL ---------- */
 function loadLevel(i){G.li=i;G.lv=parseLevel(i);var e=G.lv.ent;G.player={x:e.spawns.x,y:e.spawns.y,w:20,h:28,vx:0,vy:0,gd:1,onG:false,coy:0,face:1,stand:null,trail:[]};
- G.respawn={x:e.spawns.x,y:e.spawns.y};G.deaths=0;G.orbsGot=0;G.time=0;G.parts=[];G.cam.x=G.player.x-VW/2;G.cam.y=G.player.y-VH/2;
+ G.respawn={x:e.spawns.x,y:e.spawns.y};G.deaths=0;G.orbsGot=0;G.time=0;G.parts=[]; G.cam.x=G.player.x-VW/2;G.cam.y=G.player.y-VH/2;camClamp();
  e.orbs.forEach(function(o){o.got=false;});e.checks.forEach(function(c){c.on=false;});e.togs.forEach(function(t){t.on=false;});e.doors.forEach(function(d){d.open=0;});
  document.getElementById('hudLv').textContent='LV '+String(i+1).padStart(2,'0')+' · '+G.lv.name;updateHUD();}
 function updateHUD(){var e=G.lv.ent;document.getElementById('hudOrb').textContent=G.orbsGot+'/'+e.orbs.length;document.getElementById('hudDeath').textContent=G.deaths;var t=Math.floor(G.time);document.getElementById('hudTime').textContent=Math.floor(t/60)+':'+String(t%60).padStart(2,'0');}
@@ -378,8 +471,7 @@ function update(dt){var lv=G.lv,p=G.player,e=lv.ent,i;G.time+=dt;
  if(e.exits&&aabb(p,e.exits)){complete();return;}
  /* camera */
  var tx=p.x+p.w/2+p.vx*0.18-VW/2,tyy=p.y+p.h/2-VH/2;
- G.cam.x=lerp(G.cam.x,tx,Math.min(1,dt*6));G.cam.y=lerp(G.cam.y,tyy,Math.min(1,dt*6));
- G.cam.x=clamp(G.cam.x,0,Math.max(0,lv.W*TS-VW));G.cam.y=clamp(G.cam.y,0,Math.max(0,lv.H*TS-VH));
+ G.cam.x=lerp(G.cam.x,tx,Math.min(1,dt*6));G.cam.y=lerp(G.cam.y,tyy,Math.min(1,dt*6));camClamp();
  G.shake=Math.max(0,G.shake-dt*30);
  for(i=G.parts.length-1;i>=0;i--){var q=G.parts[i];q.t+=dt;q.x+=q.vx*dt;q.y+=q.vy*dt;q.vy+=400*dt;if(q.t>q.l)G.parts.splice(i,1);}
  if(Math.floor(G.time)!==Math.floor(G.time-dt))updateHUD();}

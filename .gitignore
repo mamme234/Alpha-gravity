@@ -1,0 +1,32 @@
+# --- build output ---
+dist/
+build/
+*.apk
+*.aab
+*.jar
+*.aar
+
+# --- signing material (never commit keys) ---
+*.keystore
+*.jks
+local.properties
+
+# --- gradle / android ---
+.gradle/
+android/.gradle/
+android/build/
+android/app/build/
+android/.cxx/
+captures/
+
+# --- node / web tooling ---
+node_modules/
+.vite/
+*.log
+
+# --- editors / os ---
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db

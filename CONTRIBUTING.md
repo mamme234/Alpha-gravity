@@ -25,6 +25,13 @@ git clone https://github.com/mamme234/Alpha-gravity.git
 cd Alpha-gravity
 ```
 
+The web build has no dependencies — `index.html` is the whole game. To build the Android
+app you need JDK 17 and an Android SDK with platform 34 + build-tools 34:
+
+```bash
+gradle -p android assembleDebug     # installable APK in android/app/build/outputs/apk/debug/
+```
+
 #### Make Changes
 1. Create a feature branch: `git checkout -b feature/my-feature`
 2. Make your changes
@@ -41,12 +48,12 @@ cd Alpha-gravity
 - Use clear, readable JavaScript
 - Comment complex logic
 - Follow existing patterns
-- Test on Android 5.0+ devices
+- Test on Android 8.0+ (API 26) devices
 
 ## Testing Guidelines
 
 ### Device Testing
-- Minimum: Android 5.0 device or emulator
+- Minimum: Android 8.0 (API 26) device or emulator
 - Recommended: Test on multiple screen sizes
 - Check touch controls on actual device
 - Verify save/load functionality
@@ -69,13 +76,13 @@ Please update documentation if your changes affect:
 ## Release Process
 
 1. Version bumped in:
-   - `build.gradle` (versionCode, versionName)
-   - `AndroidManifest.xml` (android:versionName)
+   - `android/app/build.gradle` (the `versionCode` / `versionName` defaults, or passed by CI)
    - README.md
 
 2. Tag created: `git tag v1.x.x`
 
-3. GitHub Actions builds APK automatically
+3. The `Android APK` GitHub Actions workflow builds the APK automatically (it can also be
+   started from Actions → Android APK → Run workflow), and attaches it to the release
 
 4. Release published with notes
 

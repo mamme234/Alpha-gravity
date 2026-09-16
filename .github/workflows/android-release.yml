@@ -1,0 +1,139 @@
+name: Android APK
+
+# Push a tag like v1.0.0 (or run this workflow manually) to build the APK with the
+# Android SDK that ships on GitHub runners and attach it to a GitHub release.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build, without the leading "v"'
+        required: true
+        default: '1.0.0'
+      publish:
+        description: 'Create / update the GitHub release with the APK'
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    name: Build APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # Gradle is installed explicitly instead of through a committed wrapper jar
+      # (the repository keeps no binary blobs), and the Android SDK is preinstalled
+      # on the runner image.
+      - name: Install Gradle 8.9
+        run: |
+          curl -sSL -o "$RUNNER_TEMP/gradle.zip" https://services.gradle.org/distributions/gradle-8.9-bin.zip
+          unzip -q "$RUNNER_TEMP/gradle.zip" -d "$RUNNER_TEMP"
+          "$RUNNER_TEMP/gradle-8.9/bin/gradle" --version
+          echo "$RUNNER_TEMP/gradle-8.9/bin" >> "$GITHUB_PATH"
+
+      - name: Resolve version
+        id: v
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            V='${{ inputs.version }}'
+          else
+            V="${GITHUB_REF_NAME#v}"
+          fi
+          [ -n "$V" ] || V="1.0.0"
+          echo "name=$V" >> "$GITHUB_OUTPUT"
+          echo "Building Alpha Gravity $V"
+
+      # Optional: set KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS and KEY_PASSWORD
+      # repository secrets for a properly signed APK. Without them the release APK is
+      # signed with the debug key so the build still produces an installable file.
+      - name: Configure signing
+        id: sign
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/alpha-release.jks"
+            echo "args=-PalphaStoreFile=$RUNNER_TEMP/alpha-release.jks -PalphaStorePassword=$KEYSTORE_PASSWORD -PalphaKeyAlias=${KEY_ALIAS:-alphagravity} -PalphaKeyPassword=${KEY_PASSWORD:-$KEYSTORE_PASSWORD}" >> "$GITHUB_OUTPUT"
+            echo "::notice::Release APK will be signed with the repository keystore."
+          else
+            echo "args=" >> "$GITHUB_OUTPUT"
+            echo "::warning::No signing secrets found — the release APK will be signed with the debug key."
+          fi
+
+      - name: Build APK
+        working-directory: android
+        run: |
+          gradle --no-daemon assembleRelease \
+            -PalphaVersionName='${{ steps.v.outputs.name }}' \
+            -PalphaVersionCode='${{ github.run_number }}' \
+            ${{ steps.sign.outputs.args }}
+
+      - name: Collect artifact
+        run: |
+          mkdir -p dist
+          cp android/app/build/outputs/apk/release/app-release.apk \
+             "dist/alpha-gravity-${{ steps.v.outputs.name }}.apk"
+          (cd dist && sha256sum ./*.apk > SHA256SUMS.txt)
+          ls -lh dist
+          cat dist/SHA256SUMS.txt
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: alpha-gravity-${{ steps.v.outputs.name }}
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Publish GitHub release
+        if: github.event_name == 'push' || inputs.publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.v.outputs.name }}
+        run: |
+          TAG="v$VERSION"
+          cat > "$RUNNER_TEMP/notes.md" <<EOF
+          ## ALPHA GRAVITY v$VERSION
+
+          A 30-level neon 2D physics puzzle platformer. Push crates, hold switches, ride
+          movers, bounce off launch pads and flip gravity itself — playable on the web and
+          now shippable as an Android app.
+
+          ### Install
+
+          1. Download **alpha-gravity-$VERSION.apk** below (or grab it from the workflow artifacts).
+          2. On the device, allow installing apps from the browser or file manager you use.
+          3. Open the APK and install. Requires Android 8.0 (API 26) or newer.
+
+          ### Notes
+
+          - The APK is a thin WebView shell around the exact same build as \`index.html\`: identical
+            30 levels, identical save data, no duplication of the game code.
+          - Progress (stars, orbs, unlocked sectors) is stored on-device; the game itself needs no network.
+          - Verify your download against \`SHA256SUMS.txt\`.
+          EOF
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/*.apk dist/SHA256SUMS.txt --clobber
+            gh release edit "$TAG" --notes-file "$RUNNER_TEMP/notes.md"
+          else
+            gh release create "$TAG" dist/*.apk dist/SHA256SUMS.txt \
+              --title "Alpha Gravity v$VERSION" \
+              --notes-file "$RUNNER_TEMP/notes.md" \
+              --target "$GITHUB_SHA"
+          fi

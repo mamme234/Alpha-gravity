@@ -1,0 +1,84 @@
+plugins {
+    id 'com.android.application'
+}
+
+/*
+ * ALPHA GRAVITY — app module.
+ *
+ * The game is NOT duplicated here: `syncWebApp` copies index.html (plus icon.svg and
+ * manifest.webmanifest) from the repository root into the APK's assets at build time,
+ * so the browser build and the Android build can never drift apart.
+ *
+ * Release signing is optional. CI decodes the KEYSTORE_BASE64 secret into a file and
+ * passes -PalphaStoreFile / -PalphaStorePassword / -PalphaKeyAlias / -PalphaKeyPassword.
+ * Without those the release APK is signed with the debug key, so `assembleRelease`
+ * always produces something installable.
+ */
+
+def storeFilePath = project.findProperty('alphaStoreFile') ?: System.getenv('ALPHA_STORE_FILE')
+def hasReleaseKey = storeFilePath != null && file(storeFilePath).exists()
+def appVersionName = (project.findProperty('alphaVersionName') ?: '1.0.0').toString()
+def appVersionCode = (project.findProperty('alphaVersionCode') ?: '1').toString().toInteger()
+
+android {
+    namespace 'com.alphacore.alphagravity'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.alphacore.alphagravity'
+        minSdk 26          // Android 8.0 — required for adaptive launcher icons and modern WebView
+        targetSdk 34
+        versionCode appVersionCode
+        versionName appVersionName
+    }
+
+    signingConfigs {
+        release {
+            if (hasReleaseKey) {
+                storeFile file(storeFilePath)
+                storePassword (project.findProperty('alphaStorePassword') ?: System.getenv('ALPHA_STORE_PASSWORD'))
+                keyAlias (project.findProperty('alphaKeyAlias') ?: System.getenv('ALPHA_KEY_ALIAS') ?: 'alphagravity')
+                keyPassword (project.findProperty('alphaKeyPassword') ?: System.getenv('ALPHA_KEY_PASSWORD'))
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources false
+            proguardFiles rootProject.file('../proguard-rules.pro')
+            signingConfig hasReleaseKey ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    lint {
+        abortOnError false
+    }
+
+}
+
+// ---------------------------------------------------------------- web assets
+def webRoot = rootProject.projectDir.parentFile
+def generatedAssets = layout.buildDirectory.dir('generated/webassets')
+
+tasks.register('syncWebApp', Sync) {
+    description = 'Copies the web build (index.html, icon.svg, manifest.webmanifest) into Android assets.'
+    group = 'build'
+    from(webRoot) {
+        include 'index.html'
+        include 'icon.svg'
+        include 'manifest.webmanifest'
+    }
+    into generatedAssets
+}
+
+android.sourceSets.main.assets.srcDirs += generatedAssets.get().asFile
+
+tasks.matching { it.name.toLowerCase().startsWith('merge') && it.name.toLowerCase().endsWith('assets') }
+        .configureEach { dependsOn tasks.named('syncWebApp') }

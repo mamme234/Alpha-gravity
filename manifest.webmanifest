@@ -1,0 +1,28 @@
+{
+  "name": "Alpha Gravity",
+  "short_name": "Alpha Gravity",
+  "description": "A 30-level neon 2D physics puzzle platformer. Flip gravity, push crates, hold switches, ride movers and bounce off launch pads.",
+  "id": "/alpha-gravity/",
+  "start_url": ".",
+  "scope": ".",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#04060d",
+  "theme_color": "#04060d",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

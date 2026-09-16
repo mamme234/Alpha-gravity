@@ -1,0 +1,19 @@
+// ALPHA GRAVITY — Android wrapper around the web build in ../index.html
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'AlphaGravity'
+include ':app'
