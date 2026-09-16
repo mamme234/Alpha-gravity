@@ -1,3 +1,10 @@
+import org.gradle.api.DefaultTask
+import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.TaskAction
+
 plugins {
     id 'com.android.application'
 }
@@ -60,25 +67,51 @@ android {
     lint {
         abortOnError false
     }
-
 }
 
-// ---------------------------------------------------------------- web assets
-def webRoot = rootProject.projectDir.parentFile
-def generatedAssets = layout.buildDirectory.dir('generated/webassets')
+/**
+ * Copies the repository's web build into the APK assets.
+ *
+ * It is registered below as a *generated asset source*, which is what makes Gradle add
+ * the dependency for every task that reads assets — asset merging, resource packaging
+ * and the lint model writer alike. Winging it with a hand-rolled `dependsOn` triggers
+ * "uses this output without declaring an explicit dependency" validation failures.
+ */
+abstract class SyncWebAppTask extends DefaultTask {
+    /** The exact web files to package — listed individually so this task never depends on
+     *  the whole repository directory (which contains this module's build output). */
+    @InputFiles
+    abstract ConfigurableFileCollection getWebFiles()
 
-tasks.register('syncWebApp', Sync) {
+    @OutputDirectory
+    abstract DirectoryProperty getOutputDir()
+
+    @TaskAction
+    void run() {
+        File out = getOutputDir().get().asFile
+        getProject().delete(out)
+        out.mkdirs()
+        getProject().copy {
+            from(getWebFiles())
+            into out
+        }
+    }
+}
+
+def webRoot = rootProject.projectDir.parentFile
+
+def syncWebApp = tasks.register('syncWebApp', SyncWebAppTask) {
     description = 'Copies the web build (index.html, icon.svg, manifest.webmanifest) into Android assets.'
     group = 'build'
-    from(webRoot) {
-        include 'index.html'
-        include 'icon.svg'
-        include 'manifest.webmanifest'
-    }
-    into generatedAssets
+    webFiles.setFrom(
+            new File(webRoot, 'index.html'),
+            new File(webRoot, 'icon.svg'),
+            new File(webRoot, 'manifest.webmanifest'))
+    outputDir.set(layout.buildDirectory.dir('generated/webassets'))
 }
 
-android.sourceSets.main.assets.srcDirs += generatedAssets.get().asFile
-
-tasks.matching { it.name.toLowerCase().startsWith('merge') && it.name.toLowerCase().endsWith('assets') }
-        .configureEach { dependsOn tasks.named('syncWebApp') }
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        variant.sources.assets?.addGeneratedSourceDirectory(syncWebApp, { it.outputDir })
+    }
+}
